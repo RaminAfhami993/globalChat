@@ -20,13 +20,14 @@
         #chatForm {
             position: fixed;
             bottom: 0px;
-            /* opacity: 0; */
+            opacity: 0;
         }
 
         #chatHistory {
-            /* opacity: 0; */
+            opacity: 0;
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: column;
+            align-items: flex-start;
             overflow: auto;
             border: 1px solid rebeccapurple;
             border-radius: 5px;
@@ -34,6 +35,14 @@
             position: fixed;
             bottom: 50px;
             padding: 20px
+        }
+
+        .you {
+            color: blue
+        }
+
+        .others {
+            color: red
         }
     </style>
 
@@ -57,10 +66,10 @@
     <div id="chatForm" class="col-md-9">
         <form class="form-inline">
             <div class="form-group mb-2 col-md-10">
-                <label for="username" class="sr-only">Email</label>
-                <input type="text" class="col-md-12 form-control" id="username" value="">
+                <label for="message" class="sr-only">Email</label>
+                <input type="text" class="col-md-12 form-control" id="message" value="">
             </div>
-            <button type="submit" class="btn btn-primary mb-2 col-md-2">Submit Username</button>
+            <button type="submit" class="btn btn-primary mb-2 col-md-2" id="messageBtn">Send message</button>
         </form>     
     </div>
 
@@ -70,6 +79,51 @@
     <script src="/socket.io/socket.io.js"></script>
     
     <script>
+        const clientSocket = io();
+
+        let username;
+        $('#loginBtn').click(function(event) {
+             event.preventDefault();
+
+             username = $('#username').val();
+
+             clientSocket.emit('login', {username});
+        });
+
+        clientSocket.on('successLogin', (data) => {
+            $('#loginContainer').css('opacity', 0);
+            $('#chatHistory').css('opacity', 1);
+            $('#chatForm').css('opacity', 1);
+        });
+
+        clientSocket.on('newUser', (data) => {
+            console.log(data);
+        });
+
+        $('#messageBtn').click(function(event) {
+             event.preventDefault();
+
+             let message = $('#message').val();
+
+             clientSocket.emit('message', {username, message});
+
+             $('#chatHistory').append(`<div>
+                    <div class="you">you</div>
+                    <div>${message}<div>
+                <div>`)
+        });
+
+
+        clientSocket.on('newMessage', (data) => {
+            $('#chatHistory').append(`<div>
+                    <div class="others">${data.username}</div>
+                    <div>${data.message}<div>
+                <div>`);
+        });
+
+        
+
+
 
     </script>
 </body>
